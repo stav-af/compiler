@@ -52,7 +52,6 @@ let s_of_bop = function
 
 let s_of_args aargs =
   let rec aux _args acc = 
-    print_endline "in aux";
     match _args with
     | [] -> ""
     | a::[] -> acc ^ Printf.sprintf "i32 %s" a 
@@ -64,7 +63,6 @@ let s_of_args aargs =
 
 let s_of_decl_args aargs =
   let rec aux _args acc = 
-    print_endline "in aux";
     match _args with
     | [] -> ""
     | a::[] -> acc ^ Printf.sprintf "i32 %%%s" a 
@@ -75,7 +73,6 @@ let s_of_decl_args aargs =
   aux aargs ""
 
 let rec cps e k =
-  print_endline "compilation at cps";
  match e with 
  | VAR(s) -> k(KVar s)
  | VAL(i) -> k(KNum i)
@@ -111,7 +108,6 @@ let rec cps e k =
 let cpsi e = (cps e (fun x -> KReturn(x)))
 
 let rec compile_kval kval = 
- print_endline "compile kval";
  match kval with
  | KVar(name) -> 
   Printf.sprintf "%%%s" name
@@ -125,7 +121,6 @@ let rec compile_kval kval =
   Printf.sprintf "call i32 @printInt(i32 %s)" (compile_kval kexp)
 
 let rec compile_kexp kexp = 
- print_endline "kexp";
  match kexp with 
  | KIf(varname, exp1, exp2) ->
   let if_branch = fresh "if_branch" in
@@ -144,7 +139,6 @@ let rec compile_kexp kexp =
 
 
 let rec compile_prog p =
-  print_endline "cmpile prog";
   match p with 
  | DEF_SEQ(FUNC(name, args, exp), prog) ->
     let signiature = Printf.sprintf "\ndefine i32 @%s(%s) {\n" name (s_of_decl_args args) in
@@ -158,7 +152,6 @@ let rec compile_prog p =
   "}\n"
 
 let compile prog = 
-  print_endline "in compile";
   prelude ^
   compile_prog prog
 

@@ -23,3 +23,5 @@ result
 .DS_Store
 nix/profiles/*
 !/matcher/bin/main.ml
+
+out/**

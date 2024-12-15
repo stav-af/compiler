@@ -1,4 +1,4 @@
 (executable
  (public_name compiler)
  (name main)
- (libraries compiler))
+ (libraries compiler.lexer compiler.parser compiler.codegen compiler.defs))
