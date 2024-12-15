@@ -18,7 +18,9 @@ type aexp =
  | SEQ of aexp * aexp
  | AEXP of aop * aexp * aexp
  | VAR of string
- | VAL of int
+ | INT_VAL of int
+ | DBL_VAL of float
+ | CHR_VAL of char
  | ITE of bexp * aexp * aexp
  | WRITE_EXPR of aexp
  | CALL of string * aexp list
@@ -30,7 +32,10 @@ and bexp =
  | BEXP of bop * bexp * bexp
 
 type decl = 
- | FUNC of string * string list * aexp
+ | CONST_INT of string * int
+ | CONST_DBL of string * float
+ | FUNC of string * (string * string) list * aexp * string
+ | MAIN of aexp
 
 type prog = 
  | DEF_SEQ of decl * prog

@@ -41,7 +41,9 @@ and pretty_aexp indent = function
         (pretty_aexp (indent + 1) a1)
         (pretty_aexp (indent + 1) a2)
   | VAR name -> Printf.sprintf "VAR(%s)" name
-  | VAL value -> Printf.sprintf "VAL(%d)" value
+  | CHR_VAL value -> Printf.sprintf "VAL(%c)" value
+  | INT_VAL value -> Printf.sprintf "VAL(%n)" value
+  | DBL_VAL value -> Printf.sprintf "VAL(%f)" value
   | ITE (cond, a1, a2) ->
       Printf.sprintf "%sITE(\n%s,\n%s,\n%s\n%s)"
         (indent_string indent)
@@ -80,14 +82,21 @@ and pretty_bexp indent = function
         (pretty_bexp 0 b1)
         (pretty_bexp 0 b2)
 
-and pretty_decl indent = function
-  | FUNC (name, args, body) ->
-      Printf.sprintf "%sFUNC(%s, [%s],\n%s\n%s)"
+let rec pretty_decl indent = function
+  | FUNC (name, args, body, t) ->
+      let args_str =
+        args
+        |> List.map (fun (arg_name, arg_type) -> Printf.sprintf "%s: %s" arg_name arg_type)
+        |> String.concat ", "
+      in
+      Printf.sprintf "%sFUNC(%s, [%s] -> %s,\n%s\n%s)"
         (indent_string indent)
         name
-        (String.concat ", " args)
+        args_str
+        t
         (pretty_aexp (indent + 1) body)
         (indent_string indent)
+  | _ -> failwith "NOT DEFINED"
 
 and pretty_prog indent = function
   | DEF_SEQ (decl, prog) ->

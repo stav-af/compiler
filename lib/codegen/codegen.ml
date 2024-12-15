@@ -65,8 +65,8 @@ let s_of_decl_args aargs =
   let rec aux _args acc = 
     match _args with
     | [] -> ""
-    | a::[] -> acc ^ Printf.sprintf "i32 %%%s" a 
-    | a::rest -> 
+    | (a, _)::[] -> acc ^ Printf.sprintf "i32 %%%s" a 
+    | (a, _)::rest -> 
         let curr = acc ^ Printf.sprintf "i32 %%%s, " a in
         aux rest curr
     in
@@ -74,14 +74,14 @@ let s_of_decl_args aargs =
 
 let rec cps e k =
  match e with 
- | VAR(s) -> k(KVar s)
- | VAL(i) -> k(KNum i)
+ | VAR(s) -> k(KVar(s, UNDEF))
+ (* | VAL(i) -> k(KNum i) *)
  | AEXP(op, e1, e2) ->
   let label = (fresh "tmp") in
   let sop = (s_of_aop op) in
   (cps e1 (fun lhs ->
     cps e2 (fun rhs -> 
-      KLet(label, KOp(sop, lhs, rhs), k(KVar label)))))
+      KLet(label, KOp(sop, lhs, rhs), k(KVar(label, UNDEF))))))
  | ITE(COMP(op, ce1, ce2), e1, e2) ->
   let label = fresh "tmp" in
   let sop = s_of_bop op in 
@@ -97,19 +97,19 @@ let rec cps e k =
     (match aargs with 
     | [] -> 
       let label = fresh "tmp" in
-      KLet(label, KCall(fname, vs), k(KVar(label)))
+      KLet(label, KCall(fname, vs), k(KVar(label, UNDEF)))
     | a::xa -> (cps a (fun y -> aux xa (vs@[y])))) in
   aux args []
  | WRITE_EXPR(ex) ->
     let label = fresh "tmp" in
-    (cps ex (fun y -> KLet(label, KWrite(y), k(KVar(label)))))
+    (cps ex (fun y -> KLet(label, KWrite(y), k(KVar(label, UNDEF)))))
  | _ -> failwith "not implemented"
 
 let cpsi e = (cps e (fun x -> KReturn(x)))
 
 let rec compile_kval kval = 
  match kval with
- | KVar(name) -> 
+ | KVar(name, _) -> 
   Printf.sprintf "%%%s" name
  | KNum(n) ->  
   Printf.sprintf "%n" n
@@ -140,7 +140,7 @@ let rec compile_kexp kexp =
 
 let rec compile_prog p =
   match p with 
- | DEF_SEQ(FUNC(name, args, exp), prog) ->
+ | DEF_SEQ(FUNC(name, args, exp, _), prog) ->
     let signiature = Printf.sprintf "\ndefine i32 @%s(%s) {\n" name (s_of_decl_args args) in
     signiature ^
     compile_kexp(cpsi exp)
@@ -150,6 +150,7 @@ let rec compile_prog p =
   "\ndefine i32 @main() {\n" ^
   compile_kexp (cps exp (fun _ -> KReturn(KNum(0)))) ^
   "}\n"
+  | _ -> failwith "Not Implemented DEF COMPILATION"
 
 let compile prog = 
   prelude ^

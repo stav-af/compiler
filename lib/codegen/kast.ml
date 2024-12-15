@@ -1,5 +1,10 @@
+type ktype = 
+ | UNDEF
+ | INT
+ | FLT
+
 type kVal = 
- | KVar of string
+ | KVar of string * ktype
  | KNum of int
  | KOp of string * kVal * kVal
  | KCall of string * kVal list
